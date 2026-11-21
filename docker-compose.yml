@@ -1,0 +1,120 @@
+# ==============================================================================
+#  AutoSOC Local Infrastructure
+#  Brings up: Qdrant, Redis, RabbitMQ (with Management UI), Arize Phoenix
+#
+#  Usage:
+#    docker compose up -d          # start all services in background
+#    docker compose ps             # check health status
+#    docker compose logs -f        # stream all logs
+#    docker compose down -v        # stop and remove volumes
+# ==============================================================================
+
+services:
+
+  # ----------------------------------------------------------------------------
+  # Qdrant — Vector Database
+  #   • Stores dense + sparse embeddings of MITRE ATT&CK, NIST, CVE docs
+  #   • REST API on 6333, gRPC on 6334
+  # ----------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: autosoc-qdrant
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Redis — In-Memory Data Store (3 roles)
+  #   1. Semantic cache (vector cosine similarity hits)
+  #   2. LangGraph AsyncRedisSaver (agent state persistence)
+  #   3. Redlock distributed locking
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: autosoc-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --save 60 1
+      --loglevel warning
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # RabbitMQ — Async Event Backbone (with Management UI)
+  #   • Exchange: soc.events (topic)
+  #   • Queues: alerts.ingest.queue, alerts.triage.queue, remediation.approval.queue
+  #   • Dead-letter exchange: soc.dlx
+  #   • Management UI: http://localhost:15672 (guest / guest)
+  # ----------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: autosoc-rabbitmq
+    ports:
+      - "5672:5672"    # AMQP protocol
+      - "15672:15672"  # Management Web UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Arize Phoenix — LLM Observability Dashboard (self-hosted)
+  #   • Traces every LangGraph node, gRPC call, RAG retrieval, token usage
+  #   • Dashboard: http://localhost:6006
+  # ----------------------------------------------------------------------------
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: autosoc-phoenix
+    ports:
+      - "6006:6006"   # Web Dashboard
+      - "4317:4317"   # OpenTelemetry OTLP gRPC receiver
+    volumes:
+      - phoenix_data:/mnt/data
+    environment:
+      PHOENIX_WORKING_DIR: /mnt/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6006/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+# ------------------------------------------------------------------------------
+# Named Volumes — persist data between container restarts
+# ------------------------------------------------------------------------------
+volumes:
+  qdrant_data:
+  redis_data:
+  rabbitmq_data:
+  phoenix_data:
