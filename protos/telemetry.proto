@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package autosoc.telemetry.v1;
+
+// The raw security event sent by endpoints / EDR sensors
+message AlertEvent {
+  string event_id = 1;                    // Unique UUID for the alert
+  string source_ip = 2;                  // Attacker/Origin IP
+  string destination_ip = 3;             // Target Host IP
+  string hostname = 4;                   // Hostname e.g. "prod-db-01"
+  string event_type = 5;                 // e.g. "SSH_BRUTE_FORCE", "PROCESS_INJECTION"
+  int64 timestamp = 6;                   // Unix timestamp (epoch seconds/milliseconds)
+  string raw_payload = 7;                // Raw log line (syslog, auth.log, Windows Event)
+  map<string, string> metadata = 8;      // Extra key-values (e.g. pid, username, binary_path)
+}
+
+// Server response after processing a stream of incoming events
+message IngestSummary {
+  int32 processed_count = 1;             // Total alerts successfully queued
+  int32 rejected_count = 2;              // Alerts dropped (e.g. malformed or poisoned)
+  string batch_id = 3;                   // Tracking UUID for the ingestion batch
+  string status = 4;                     // "SUCCESS", "PARTIAL", "FAILED"
+}
+
+service TelemetryIngestService {
+  // Client streams multiple alerts continuously -> Server acknowledges with a summary
+  rpc StreamAlerts (stream AlertEvent) returns (IngestSummary);
+}

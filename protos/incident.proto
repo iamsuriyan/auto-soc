@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package autosoc.incident.v1;
+
+// Subscription request to follow real-time incident progress
+message IncidentSubscription {
+  string incident_id = 1;                // Target incident ID
+}
+
+// Live status event pushed as agents advance through investigation
+message IncidentStatusUpdate {
+  string incident_id = 1;
+  string current_node = 2;               // e.g. "TRIAGE", "FORENSICS", "RAG", "CRITIC"
+  string status_message = 3;             // Human-readable status update
+  float severity_score = 4;              // Computed dynamic severity (0.0 to 10.0)
+  int64 updated_at = 5;                  // Timestamp of update
+}
+
+service IncidentService {
+  // Client subscribes -> Server streams updates until incident resolution
+  rpc StreamIncidentUpdates (IncidentSubscription) returns (stream IncidentStatusUpdate);
+}
