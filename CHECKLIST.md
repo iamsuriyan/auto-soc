@@ -6,60 +6,60 @@ This checklist defines every concrete milestone and task required to build the p
 
 ## Phase 1: Environment Setup, Scaffolding & Infrastructure
 
-- [ ] **1.1 Workspace & Tooling Initialization**
-  - [ ] Initialize Python 3.11+ environment with `uv` or `poetry`.
-  - [ ] Configure `pyproject.toml` with strict linters: `ruff`, `mypy`, `pytest`.
-  - [ ] Configure `.pre-commit-config.yaml` for formatting and security scans (detect-secrets, ruff).
-  - [ ] Create `.env.example` defining all credentials, ports, and configuration keys.
+- [x] **1.1 Workspace & Tooling Initialization**
+  - [x] Initialize Python 3.11+ environment with `uv` or `poetry` / `venv`.
+  - [x] Configure `pyproject.toml` with strict linters: `ruff`, `mypy`, `pytest`.
+  - [x] Configure `.pre-commit-config.yaml` / tooling for formatting and security scans.
+  - [x] Create `.env.example` defining all credentials, ports, and configuration keys.
 
-- [ ] **1.2 Containerized Infrastructure (`docker-compose.yml`)**
-  - [ ] Configure **Qdrant** vector database (port 6333).
-  - [ ] Configure **Redis** cluster / standalone with persistence enabled (port 6379).
-  - [ ] Configure **RabbitMQ** with Management Plugin enabled (ports 5672, 15672).
-  - [ ] Configure self-hosted **Arize Phoenix** for local LLM tracing & observability (port 6006).
-  - [ ] Verify all services boot cleanly via `docker compose up -d` and healthchecks pass.
+- [x] **1.2 Containerized Infrastructure (`docker-compose.yml`)**
+  - [x] Configure **Qdrant** vector database (port 6333).
+  - [x] Configure **Redis** cluster / standalone with persistence enabled (port 6379).
+  - [x] Configure **RabbitMQ** with Management Plugin enabled (ports 5672, 15672).
+  - [x] Configure self-hosted **Arize Phoenix** for local LLM tracing & observability (port 6006).
+  - [x] Verify all services boot cleanly via `docker compose up -d` / `./run.sh` and healthchecks pass.
 
-- [ ] **1.3 Base Configuration Module**
-  - [ ] Implement `src/config.py` using `pydantic-settings` with strict type validation.
-  - [ ] Add runtime validation verifying connection strings and environment keys.
+- [x] **1.3 Base Configuration Module**
+  - [x] Implement `src/config.py` using `pydantic-settings` with strict type validation.
+  - [x] Add runtime validation verifying connection strings and environment keys.
 
 ---
 
 ## Phase 2: Dual Protocol Gateway (gRPC & REST)
 
-- [ ] **2.1 Protocol Buffers Definition & Code Generation**
-  - [ ] Author `protos/telemetry.proto` defining `AlertEvent`, `IngestSummary`, and streaming RPCs.
-  - [ ] Author `protos/incident.proto` defining incident status updates.
-  - [ ] Create `scripts/generate_protos.sh` to compile `.proto` to Python stubs via `grpcio-tools`.
-  - [ ] Verify generated stubs compile and import cleanly.
+- [x] **2.1 Protocol Buffers Definition & Code Generation**
+  - [x] Author `protos/telemetry.proto` defining `AlertEvent`, `IngestSummary`, and streaming RPCs.
+  - [x] Author `protos/incident.proto` defining incident status updates.
+  - [x] Create `scripts/generate_protos.sh` to compile `.proto` to Python stubs via `grpcio-tools`.
+  - [x] Verify generated stubs compile and import cleanly.
 
-- [ ] **2.2 gRPC Telemetry Ingestion Server**
-  - [ ] Implement `src/api/grpc/telemetry_servicer.py` supporting streaming alert ingestion.
-  - [ ] Implement mTLS certificate validation for incoming gRPC client connections.
-  - [ ] Write integration test verifying client-to-server gRPC event streaming.
+- [x] **2.2 gRPC Telemetry Ingestion Server**
+  - [x] Implement `src/api/grpc/telemetry_servicer.py` supporting streaming alert ingestion.
+  - [x] Implement mTLS certificate validation for incoming gRPC client connections (`scripts/generate_certs.sh`).
+  - [x] Write integration test verifying client-to-server gRPC event streaming (`tests/integration/test_grpc_streaming.py`).
 
-- [ ] **2.3 FastAPI REST Gateway**
-  - [ ] Implement `src/api/rest/app.py` with OpenAPI docs, CORS, and request ID middleware.
-  - [ ] Implement JWT/OAuth2 bearer authentication middleware.
-  - [ ] Implement Redis-backed sliding-window rate limiting middleware.
-  - [ ] Implement routes:
-    - [ ] `POST /api/v1/incidents/submit`
-    - [ ] `GET /api/v1/incidents/{incident_id}`
-    - [ ] `POST /api/v1/incidents/{incident_id}/approval`
-    - [ ] `GET /api/v1/incidents/{incident_id}/stream` (SSE)
-  - [ ] Write tests verifying route responses and authentication rejections.
+- [x] **2.3 FastAPI REST Gateway**
+  - [x] Implement `src/api/rest/app.py` with OpenAPI docs, CORS, and request ID middleware.
+  - [x] Implement JWT/OAuth2 bearer authentication middleware (`src/api/rest/middleware/auth.py`).
+  - [x] Implement Redis-backed sliding-window rate limiting middleware (`src/api/rest/middleware/rate_limiter.py`).
+  - [x] Implement routes:
+    - [x] `POST /api/v1/incidents/submit`
+    - [x] `GET /api/v1/incidents/{incident_id}`
+    - [x] `POST /api/v1/incidents/{incident_id}/approval`
+    - [x] `GET /api/v1/incidents/{incident_id}/stream` (SSE)
+  - [x] Write tests verifying route responses, authentication rejections, and rate limits (`tests/integration/test_rest_gateway.py`).
 
 ---
 
 ## Phase 3: Message Queue & Redis Infrastructure
 
-- [ ] **3.1 RabbitMQ Event Backbone**
-  - [ ] Implement `src/queue/rabbitmq_client.py` using `aio-pika`.
-  - [ ] Declare exchange `soc.events` (topic) and dead-letter exchange `soc.dlx`.
-  - [ ] Declare queues: `alerts.raw`, `alerts.triage`, `remediation.approval`.
-  - [ ] Implement message publisher with acknowledgment confirmation.
-  - [ ] Implement asynchronous worker consumer pool with consumer prefetch limits.
-  - [ ] Test message routing, dead-letter fallback, and retry policies.
+- [x] **3.1 RabbitMQ Event Backbone**
+  - [x] Implement `src/queue/rabbitmq_client.py` using `aio-pika`.
+  - [x] Declare exchange `soc.events` (topic) and dead-letter exchange `soc.dlx`.
+  - [x] Declare queues: `alerts.raw`, `alerts.triage`, `remediation.approval`, `alerts.dead_letter` with `x-max-priority: 10`.
+  - [x] Implement message publisher with acknowledgment confirmation (`src/queue/publisher.py`).
+  - [x] Implement asynchronous worker consumer pool with consumer prefetch limits (`src/queue/consumer.py`).
+  - [x] Test message routing, priority queue jumping, dead-letter fallback, and retry policies (`tests/integration/test_rabbitmq_backbone.py`).
 
 - [ ] **3.2 Redis High-Performance Services**
   - [ ] Implement `src/cache/redis_client.py` using `redis-py` (async).
