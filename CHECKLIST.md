@@ -61,13 +61,13 @@ This checklist defines every concrete milestone and task required to build the p
   - [x] Implement asynchronous worker consumer pool with consumer prefetch limits (`src/queue/consumer.py`).
   - [x] Test message routing, priority queue jumping, dead-letter fallback, and retry policies (`tests/integration/test_rabbitmq_backbone.py`).
 
-- [ ] **3.2 Redis High-Performance Services**
-  - [ ] Implement `src/cache/redis_client.py` using `redis-py` (async).
-  - [ ] Implement `src/cache/semantic_cache.py`:
-    - [ ] Generate cosine similarity search over cached alert embeddings.
-    - [ ] Store and retrieve cached analysis if similarity $\ge 0.94$.
-  - [ ] Implement `src/cache/distributed_lock.py` (`Redlock` algorithm) for asset-level mutual exclusion.
-  - [ ] Unit test semantic cache hits, misses, and distributed lock acquisition timeouts.
+- [x] **3.2 Redis High-Performance Services**
+  - [x] Implement `src/cache/redis_client.py` using `redis-py` (async).
+  - [x] Implement `src/cache/semantic_cache.py`:
+    - [x] Generate cosine similarity search over cached alert embeddings.
+    - [x] Store and retrieve cached analysis if similarity $\ge 0.94$.
+  - [x] Implement `src/cache/distributed_lock.py` (`Redlock` algorithm) for asset-level mutual exclusion.
+  - [x] Integration test semantic cache hits, misses, and distributed lock acquisition/ownership (`tests/integration/test_redis_services.py`).
 
 ---
 
