@@ -18,12 +18,12 @@ import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 import numpy as np
-import structlog
 
+from src.logger import get_logger
 from src.cache.redis_client import RedisClientManager, redis_manager
 from src.config import settings
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 CACHE_KEY_PREFIX = "semcache:entry:"
 CACHE_INDEX_KEY = "semcache:index"

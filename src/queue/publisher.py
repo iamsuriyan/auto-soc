@@ -12,11 +12,11 @@ from typing import Any, Dict, Optional, Union
 import uuid
 import aio_pika
 from pydantic import BaseModel
-import structlog
 
+from src.logger import get_logger
 from src.queue.rabbitmq_client import EXCHANGE_EVENTS, RabbitMQClient, rabbitmq_client
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class EventPublisher:

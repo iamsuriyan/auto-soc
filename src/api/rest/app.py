@@ -11,14 +11,13 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import structlog
-
+from src.logger import bind_context, clear_context, get_logger
 from src.api.rest.middleware.rate_limiter import default_rate_limiter
 from src.api.rest.routes.auth import router as auth_router
 from src.api.rest.routes.incidents import router as incidents_router
 from src.config import settings
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -47,25 +46,29 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def request_context_middleware(request: Request, call_next):
         request_id = request.headers.get("X-Request-ID", f"req-{uuid.uuid4().hex[:8]}")
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        bind_context(request_id=request_id, client_ip=client_ip)
         start_time = time.time()
 
-        # Enforce rate limiting across API endpoints (except docs and health)
-        if request.url.path.startswith("/api/"):
-            client_ip = request.client.host if request.client else "127.0.0.1"
-            is_limited = await default_rate_limiter.is_rate_limited(client_ip)
-            if is_limited:
-                return JSONResponse(
-                    status_code=429,
-                    content={"detail": "Rate limit exceeded. Please slow down."},
-                    headers={"Retry-After": str(default_rate_limiter.window_seconds)}
-                )
+        try:
+            # Enforce rate limiting across API endpoints (except docs and health)
+            if request.url.path.startswith("/api/"):
+                is_limited = await default_rate_limiter.is_rate_limited(client_ip)
+                if is_limited:
+                    return JSONResponse(
+                        status_code=429,
+                        content={"detail": "Rate limit exceeded. Please slow down."},
+                        headers={"Retry-After": str(default_rate_limiter.window_seconds)}
+                    )
 
-        response = await call_next(request)
-        process_time_ms = round((time.time() - start_time) * 1000, 2)
-        response.headers["X-Request-ID"] = request_id
-        response.headers["X-Process-Time-Ms"] = str(process_time_ms)
+            response = await call_next(request)
+            process_time_ms = round((time.time() - start_time) * 1000, 2)
+            response.headers["X-Request-ID"] = request_id
+            response.headers["X-Process-Time-Ms"] = str(process_time_ms)
 
-        return response
+            return response
+        finally:
+            clear_context()
 
     # 3. Healthcheck Endpoint
     @app.get("/healthz", tags=["System"])

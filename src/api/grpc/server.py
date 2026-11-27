@@ -10,13 +10,12 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 import grpc
-import structlog
-
+from src.logger import get_logger
 from src.config import settings
 from src.api.grpc.generated import telemetry_pb2_grpc
 from src.api.grpc.telemetry_servicer import TelemetryServicer
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def create_server_credentials(

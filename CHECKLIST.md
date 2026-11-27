@@ -73,26 +73,26 @@ This checklist defines every concrete milestone and task required to build the p
 
 ## Phase 4: Advanced RAG Engine & Vector Pipeline
 
-- [ ] **4.1 Qdrant Vector DB Client & Collections**
-  - [ ] Implement `src/rag/qdrant_client.py` to manage Qdrant collections.
-  - [ ] Create hybrid collection with both dense vector (1536/768 dim) and sparse vector configurations.
+- [x] **4.1 Qdrant Vector DB Client & Collections**
+  - [x] Implement `src/rag/qdrant_client.py` to manage Qdrant collections.
+  - [x] Create hybrid collection with both dense vector (1536/768 dim) and sparse vector configurations.
 
-- [ ] **4.2 Ingestion & Semantic Chunking Pipeline**
-  - [ ] Implement `src/rag/ingestion.py` for parsing MITRE ATT&CK docs, NIST guides, and playbooks.
-  - [ ] Implement hierarchical chunking with parent-child relationship tracking and metadata enrichment.
-  - [ ] Write script `scripts/seed_threat_intel.py` to populate Qdrant with initial security knowledge.
+- [x] **4.2 Ingestion & Semantic Chunking Pipeline**
+  - [x] Implement `src/rag/ingestion.py` for parsing MITRE ATT&CK docs, NIST guides, and playbooks.
+  - [x] Implement hierarchical chunking with parent-child relationship tracking and metadata enrichment.
+  - [x] Write script `scripts/seed_threat_intel.py` to populate Qdrant with initial security knowledge.
 
-- [ ] **4.3 Hybrid Search & Reciprocal Rank Fusion (RRF)**
-  - [ ] Implement dense embedding generation (FastEmbed / HuggingFace / OpenAI).
-  - [ ] Implement sparse BM25 token weight generation.
-  - [ ] Implement Reciprocal Rank Fusion algorithm to combine dense and sparse rankings.
+- [x] **4.3 Hybrid Search & Reciprocal Rank Fusion (RRF)**
+  - [x] Implement dense embedding generation (FastEmbed / HuggingFace / OpenAI).
+  - [x] Implement sparse BM25 token weight generation.
+  - [x] Implement Reciprocal Rank Fusion algorithm to combine dense and sparse rankings.
 
-- [ ] **4.4 Cross-Encoder Re-Ranking & Corrective RAG (CRAG)**
-  - [ ] Implement `src/rag/reranker.py` using `FlashRank` or `bge-reranker`.
-  - [ ] Implement `src/rag/crag_evaluator.py`:
-    - [ ] Score relevance of retrieved context against original threat query.
-    - [ ] Trigger automated query reformulation when score $< 0.80$.
-  - [ ] Integration test: verify hybrid retrieval + reranker accuracy on sample CVE queries.
+- [x] **4.4 Cross-Encoder Re-Ranking & Corrective RAG (CRAG)**
+  - [x] Implement `src/rag/reranker.py` using `FlashRank` or `bge-reranker`.
+  - [x] Implement `src/rag/crag_evaluator.py`:
+    - [x] Score relevance of retrieved context against original threat query.
+    - [x] Trigger automated query reformulation when score $< 0.80$.
+  - [x] Integration test: verify hybrid retrieval + reranker accuracy on sample CVE queries.
 
 ---
 

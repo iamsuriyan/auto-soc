@@ -8,11 +8,11 @@ from distributed EDR sensors and syslog forwarders.
 
 from typing import AsyncIterator, Callable, List, Optional
 import uuid
-import structlog
 
+from src.logger import bind_context, clear_context, get_logger
 from src.api.grpc.generated import telemetry_pb2, telemetry_pb2_grpc
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class TelemetryServicer(telemetry_pb2_grpc.TelemetryIngestServiceServicer):
@@ -40,10 +40,11 @@ class TelemetryServicer(telemetry_pb2_grpc.TelemetryIngestServiceServicer):
         The server validates, buffers, and returns an IngestSummary batch receipt.
         """
         batch_id = f"batch-{uuid.uuid4().hex[:10]}"
+        bind_context(batch_id=batch_id)
         processed_count = 0
         rejected_count = 0
 
-        logger.info("grpc_stream_alerts_started", batch_id=batch_id)
+        logger.info("grpc_stream_alerts_started")
 
         try:
             async for alert in request_iterator:

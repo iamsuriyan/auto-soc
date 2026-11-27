@@ -16,11 +16,11 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
-import structlog
 
+from src.logger import get_logger
 from src.api.rest.middleware.auth import User, get_current_user, require_role
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/incidents", tags=["Incidents"])
 

@@ -18,11 +18,11 @@ import random
 from typing import AsyncIterator, Optional
 import uuid
 import redis.asyncio as aioredis
-import structlog
 
+from src.logger import get_logger
 from src.cache.redis_client import RedisClientManager, redis_manager
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Atomic Lua script: delete lock ONLY IF the stored token matches our owner token
 UNLOCK_LUA_SCRIPT = """

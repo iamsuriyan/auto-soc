@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
+from src.logger import get_logger
 from src.api.rest.middleware.auth import (
     DEMO_USERS,
     User,
@@ -15,6 +16,8 @@ from src.api.rest.middleware.auth import (
     get_current_user,
     verify_password,
 )
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
@@ -33,6 +36,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     """
     user_record = DEMO_USERS.get(form_data.username)
     if not user_record or not verify_password(form_data.password, user_record["password_hash"]):
+        logger.warning("auth_login_failed", username=form_data.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -41,6 +45,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
     roles = user_record["roles"]
     access_token = create_access_token(data={"sub": form_data.username, "roles": roles})
+    logger.info("auth_login_succeeded", username=form_data.username, roles=roles)
 
     return TokenResponse(
         access_token=access_token,

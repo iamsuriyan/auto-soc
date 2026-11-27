@@ -22,11 +22,10 @@ from aio_pika.abc import (
     AbstractQueue,
     ExchangeType,
 )
-import structlog
-
+from src.logger import get_logger
 from src.config import settings
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Core Topology Names
 EXCHANGE_EVENTS = "soc.events"

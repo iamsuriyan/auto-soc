@@ -11,11 +11,11 @@ Serves as the shared backbone for:
 
 from typing import Optional
 import redis.asyncio as aioredis
-import structlog
 
+from src.logger import get_logger
 from src.config import settings
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class RedisClientManager:

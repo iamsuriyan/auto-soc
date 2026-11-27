@@ -14,11 +14,11 @@ import json
 from typing import Awaitable, Callable, Dict, Optional
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage, AbstractQueue
-import structlog
 
+from src.logger import get_logger
 from src.queue.rabbitmq_client import RabbitMQClient, rabbitmq_client
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class EventConsumer:

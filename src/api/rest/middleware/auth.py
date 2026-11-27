@@ -13,11 +13,11 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from pydantic import BaseModel
-import structlog
 
+from src.logger import get_logger
 from src.config import settings
 
-logger = structlog.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Reusable OAuth2 scheme pointing to login route
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
