@@ -84,3 +84,25 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    import atexit
+    import subprocess
+    import uvicorn
+
+    def _cleanup_docker():
+        try:
+            logger.info("stopping_docker_containers")
+            subprocess.run(["docker", "compose", "down"], check=False)
+        except Exception:
+            pass
+
+    atexit.register(_cleanup_docker)
+    uvicorn.run(
+        "src.api.rest.app:app",
+        host=settings.api_host,
+        port=settings.api_port,
+        reload=True
+    )
+

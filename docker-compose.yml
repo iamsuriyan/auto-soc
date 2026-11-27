@@ -32,7 +32,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
-    restart: unless-stopped
+    restart: "no"
 
   # ----------------------------------------------------------------------------
   # Redis — In-Memory Data Store (3 roles)
@@ -58,7 +58,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    restart: "no"
 
   # ----------------------------------------------------------------------------
   # RabbitMQ — Async Event Backbone (with Management UI)
@@ -85,7 +85,7 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
-    restart: unless-stopped
+    restart: "no"
 
   # ----------------------------------------------------------------------------
   # Arize Phoenix — LLM Observability Dashboard (self-hosted)
@@ -108,7 +108,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: unless-stopped
+    restart: "no"
 
 # ------------------------------------------------------------------------------
 # Named Volumes — persist data between container restarts
